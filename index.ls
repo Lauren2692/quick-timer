@@ -11,14 +11,21 @@ delay = 60000
 audio-remind = null
 audio-end = null
 rabbit-step = 0
+tick-colors = ['#fff', '#66ccff']
 
 format-seconds = (ms) ->
-  sec = Math.ceil(ms / 1000)
+  sec = Math.floor(ms / 1000)
   if sec < 0 => sec = 0
   return sec
 
+update-tick-color = (ms) ->
+  sec = format-seconds ms
+  color-index = Math.floor(sec / 10) % tick-colors.length
+  $ \#timer .css \color, tick-colors[color-index]
+
 render-timer = (ms) ->
   $ \#timer .text format-seconds ms
+  if !is-blink => update-tick-color ms
 
 move-rabbit = ->
   rb = $ \#rabbit
@@ -84,7 +91,6 @@ reset = ->
   if handler => clearInterval handler
   handler := null
   render-timer delay
-  $ \#timer .css \color, \#fff
   resize!
 
 
@@ -118,7 +124,9 @@ run =  ->
     is-blink := false
   if handler => clearInterval handler
   if is-blink => handler := setInterval (-> blink!), 500
-  else handler := setInterval (-> count!), 100
+  else
+    count!
+    handler := setInterval (-> count!), 1000
 
 resize = ->
   tm = $ \#timer
