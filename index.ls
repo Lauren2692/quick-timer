@@ -10,6 +10,26 @@ stop-by = null
 delay = 60000
 audio-remind = null
 audio-end = null
+rabbit-step = 0
+
+format-seconds = (ms) ->
+  sec = Math.ceil(ms / 1000)
+  if sec < 0 => sec = 0
+  return sec
+
+render-timer = (ms) ->
+  $ \#timer .text format-seconds ms
+
+move-rabbit = ->
+  rb = $ \#rabbit
+  if rb.length == 0 => return
+  max-x = ($ window .width!) - rb.outerWidth!
+  max-y = ($ window .height!) - rb.outerHeight!
+  x = Math.random! * (if max-x > 0 => max-x else 0)
+  y = Math.random! * (if max-y > 0 => max-y else 0)
+  rabbit-step := rabbit-step + 1
+  scale-x = if rabbit-step % 2 == 0 => -1 else 1
+  rb.css \transform, "translate(#{x}px, #{y}px) scaleX(#{scale-x})"
 
 new-audio = (file) ->
   node = new Audio!
@@ -34,7 +54,7 @@ adjust = (it,v) ->
   delay := delay + it * 1000
   if it==0 => delay := v * 1000
   if delay <= 0 => delay := 0
-  $ \#timer .text delay
+  render-timer delay
   resize!
 
 toggle = ->
@@ -63,7 +83,7 @@ reset = ->
   toggle!
   if handler => clearInterval handler
   handler := null
-  $ \#timer .text delay
+  render-timer delay
   $ \#timer .css \color, \#fff
   resize!
 
@@ -87,7 +107,8 @@ count = ->
     diff = 0
     clearInterval handler
     handler := setInterval ( -> blink!), 500
-  tm.text "#{diff}"
+  render-timer diff
+  move-rabbit!
   resize!
 
 run =  ->
@@ -110,7 +131,8 @@ resize = ->
 
 
 window.onload = ->
-  $ \#timer .text delay
+  render-timer delay
+  move-rabbit!
   resize!
   #audio-remind := new-audio \audio/cop-car.mp3
   #audio-end := new-audio \audio/fire-alarm.mp3
